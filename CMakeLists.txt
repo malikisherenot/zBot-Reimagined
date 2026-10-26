@@ -16,10 +16,15 @@ file(GLOB SOURCES
     src/recordmanager.cpp
     src/speedhackaudio.cpp
     # src/clickbetweenframescompat.cpp
-    src/zClickbot/clickbot.cpp
-    src/zKeyChecker/keychecker.cpp 
     # src/zPracticeMode/practicemode.cpp
 )
+
+# Private submodules (clickbot + key check). If missing, build the free version without them.
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/zClickbot/clickbot.cpp AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/zKeyChecker/keychecker.cpp)
+    list(APPEND SOURCES src/zClickbot/clickbot.cpp src/zKeyChecker/keychecker.cpp)
+else()
+    list(APPEND SOURCES src/nokey.cpp)
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 

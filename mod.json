@@ -2,7 +2,8 @@
 	"geode": "5.8.2",
 	"gd": {
 		"win": "2.2081",
-		"mac": "2.2081"
+		"mac": "2.2081",
+		"android": "2.2081"
 	},
 	"version": "v3.0.0-beta.12",
 	"tags": [
@@ -32,6 +33,7 @@
 			"name": "zBot Toggle",
 			"description": "Toggles the zBot GUI",
 			"default": "B",
+			"platforms": ["win", "mac"],
 			"category": "universal"
 		},
 		"frame_advance": {
@@ -39,6 +41,7 @@
 			"name": "Toggle Frame Advance",
 			"description": "Toggles frame advance",
 			"default": "V",
+			"platforms": ["win", "mac"],
 			"category": "universal"
 		},
 		"advance_frame": {
@@ -46,6 +49,7 @@
 			"name": "Frame Advance",
 			"description": "Advances the game by one frame (only works when the game is paused)",
 			"default": "C",
+			"platforms": ["win", "mac"],
 			"category": "universal"
 		}
 	},

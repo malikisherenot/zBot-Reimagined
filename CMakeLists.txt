@@ -10,6 +10,7 @@ file(GLOB SOURCES
 	src/framecounting.cpp
     src/gui.cpp
     src/keybinds.cpp
+    src/mobile.cpp
     src/physicsbypass.cpp
     src/playbackmanager.cpp
     src/recordmanager.cpp
@@ -38,11 +39,9 @@ CPMAddPackage("gh:maxnut/GDReplayFormat#9c32b5529067901418ea6e4dfbd36437dc8712bc
 CPMAddPackage("gh:matcool/gd-imgui-cocos#b93f08ccef778a53ebba09b20c347f6a63980119")
 target_compile_definitions(${PROJECT_NAME} PRIVATE MOD_VERSION="${CMAKE_PROJECT_VERSION}")
 
-if (WIN32)
 target_link_libraries(${PROJECT_NAME} imgui-cocos libGDR)
-elseif (APPLE)
-target_link_libraries(${PROJECT_NAME} imgui-cocos libGDR "-framework IOKit")
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
 endif()
-
 
 setup_geode_mod(${PROJECT_NAME})

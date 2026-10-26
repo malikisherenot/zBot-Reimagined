@@ -2,6 +2,8 @@
 #define _replay_hpp
 
 #include <Geode/Geode.hpp>
+#include <fstream>
+#include <filesystem>
 #include <gdr/gdr.hpp>
 
 using namespace geode::prelude;

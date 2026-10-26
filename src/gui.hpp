@@ -21,6 +21,7 @@ public:
     bool showCBFMessage = false;
     bool shownCBFMessage = false;
     
+    float scale = 1.f;
     bool visible = false;
     bool key = false;
     bool keyCheckFailed = false;

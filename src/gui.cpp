@@ -2,8 +2,19 @@
 #include "zBot.hpp"
 #include <Geode/Bindings.hpp>
 #include <Geode/modify/LoadingLayer.hpp>
+#include <Geode/utils/web.hpp>
 
 using namespace geode::prelude;
+
+static ImVec2 V(float x, float y) {
+    float s = GUI::get()->scale;
+    return ImVec2(x * s, y * s);
+}
+
+static void centerNextWindow(float w, float h) {
+    ImGui::SetNextWindowSize(V(w, h), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+}
 
 void GUI::renderReplayInfo() {
     zBot* mgr = zBot::get();
@@ -44,8 +55,8 @@ void GUI::renderStateSwitcher() {
 void RenderInfoPanel() {
     zBot* mgr = zBot::get();
 
-    ImGui::SetNextWindowSize(ImVec2(200, 320), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(385, 10), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(V(200, 320), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(V(385, 10), ImGuiCond_Once);
     ImGui::Begin("utilities", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
     
     ImGui::Text("TPS: ");
@@ -82,24 +93,28 @@ void RenderInfoPanel() {
 void RenderHackPanel() {
     zBot* mgr = zBot::get();
     
-    ImGui::SetNextWindowSize(ImVec2(200, 320), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(610, 10), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(V(200, 320), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(V(610, 10), ImGuiCond_Once);
     ImGui::Begin("hacks", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
     
     ImGui::Checkbox("Frame Advance", &mgr->frameAdvance);
+#ifdef GEODE_IS_MOBILE
+    if (mgr->frameAdvance && ImGui::Button("Next Frame")) {
+        mgr->doAdvance = true;
+    }
+#endif
     ImGui::Checkbox("Speedhack Audio", &mgr->speedHackAudio);
     if (ImGui::Checkbox("Clickbot", &mgr->clickbotEnabled) && !GUI::get()->key) {
         mgr->clickbotEnabled = false;
         ImGui::OpenPopup("Upgrade to Pro!");
     }
 
-    ImGui::SetNextWindowSize(ImVec2(400, 125), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 200, ImGui::GetIO().DisplaySize.y / 2 - 62.5), ImGuiCond_Always);
+    centerNextWindow(400, 125);
     if (ImGui::BeginPopupModal("Upgrade to Pro!", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         ImGui::Text("You've discovered a pro feature!"); 
 
         if (ImGui::Button("Upgrade")) {
-            system("start https://zbot.figmentcoding.me/");
+            utils::web::openLinkInBrowser("https://zbot.figmentcoding.me/");
         }
 
         ImGui::SameLine();
@@ -118,8 +133,8 @@ void RenderHackPanel() {
 }
 
 void GUI::renderMainPanel() {
-    ImGui::SetNextWindowSize(ImVec2(350, 525), ImGuiCond_Once);
-	ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(V(350, 525), ImGuiCond_Once);
+	ImGui::SetNextWindowPos(V(10, 10), ImGuiCond_Once);
     ImGui::Begin("info", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
     ImGui::PushFont(l);
     ImGui::TextColored(ImVec4(1.f, 0.78f, 0.17f, 1.f), "zBot");
@@ -153,10 +168,14 @@ void GUI::renderMainPanel() {
     } else {
         ImGui::Text("Upgrade to import replays!");
         if (ImGui::Button("Upgrade to Pro!")) {
-            system("start https://zbot.figmentcoding.me/");
+            utils::web::openLinkInBrowser("https://zbot.figmentcoding.me/");
         }
     }
 
+#ifdef GEODE_IS_MOBILE
+    ImGui::Text("Replays folder:");
+    ImGui::TextWrapped("%s", (Mod::get()->getSaveDir() / "replays").string().c_str());
+#else
     ImGui::SameLine();
     if (ImGui::Button("Open Replays Folder")) {
         auto dir = Mod::get()->getSaveDir() / "replays";
@@ -164,6 +183,7 @@ void GUI::renderMainPanel() {
             utils::file::openFolder(dir);
         }
     }
+#endif
 
     if (!key) {
         if (ImGui::Button("Enter Product Key")) {
@@ -171,8 +191,7 @@ void GUI::renderMainPanel() {
         }
     }
 
-    ImGui::SetNextWindowSize(ImVec2(400, 125), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 200, ImGui::GetIO().DisplaySize.y / 2 - 62.5), ImGuiCond_Always);
+    centerNextWindow(400, 125);
     if (ImGui::BeginPopupModal("Enter your product key:", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         static char key[37];
 
@@ -224,6 +243,13 @@ void GUI::renderMainPanel() {
         }
     }
     
+#ifdef GEODE_IS_MOBILE
+    ImGui::NewLine();
+    if (ImGui::Button("Close")) {
+        visible = false;
+    }
+#endif
+
     ImGui::PopFont();
     ImGui::End();
 }
@@ -248,7 +274,9 @@ void GUI::renderer() {
 
     if (!visible) return;
     
+#ifdef GEODE_IS_DESKTOP
     PlatformToolbox::showCursor();
+#endif
 
     renderMainPanel();
     RenderInfoPanel();
@@ -259,8 +287,7 @@ void GUI::renderer() {
         ImGui::OpenPopup("Key Check Failed");
     }
 
-    ImGui::SetNextWindowSize(ImVec2(500, 140), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 250, ImGui::GetIO().DisplaySize.y / 2 - 70), ImGuiCond_Always);
+    centerNextWindow(500, 140);
     if (ImGui::BeginPopupModal("Key Check Failed", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         ImGui::Text("Your key is invalid or has been linked to a different computer.");
         ImGui::Text("Please enter a valid key or contact support.");
@@ -275,8 +302,7 @@ void GUI::renderer() {
         ImGui::OpenPopup("CBF Detected!");
     }
 
-    ImGui::SetNextWindowSize(ImVec2(500, 140), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 250, ImGui::GetIO().DisplaySize.y / 2 - 70), ImGuiCond_Always);
+    centerNextWindow(500, 140);
     if (ImGui::BeginPopupModal("CBF Detected!", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         ImGui::Text("Click between frames has been detected!");
         ImGui::Text("Even when disabled in options, playback may be affected.");
@@ -288,6 +314,11 @@ void GUI::renderer() {
 }
 
 void GUI::setup() {
+#ifdef GEODE_IS_MOBILE
+    auto frame = CCDirector::get()->getOpenGLView()->getFrameSize();
+    scale = std::max(1.f, frame.height / 720.f);
+#endif
+
     ImGuiStyle* style = &ImGui::GetStyle();
 
     style->WindowPadding = ImVec2(15, 15);
@@ -301,6 +332,7 @@ void GUI::setup() {
     style->ScrollbarRounding = 9.0f;
     style->GrabMinSize = 5.0f;
     style->GrabRounding = 3.0f;
+    style->ScaleAllSizes(scale);
 
     style->Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
     style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
@@ -343,9 +375,9 @@ void GUI::setup() {
 
     auto path = (Mod::get()->getResourcesDir() / "micross.ttf").string();
 
-    s = io.Fonts->AddFontFromFileTTF(path.c_str(), 18.0f);
-    l = io.Fonts->AddFontFromFileTTF(path.c_str(), 28.0f);
-    vl = io.Fonts->AddFontFromFileTTF(path.c_str(), 100.0f);
+    s = io.Fonts->AddFontFromFileTTF(path.c_str(), 18.0f * scale);
+    l = io.Fonts->AddFontFromFileTTF(path.c_str(), 28.0f * scale);
+    vl = io.Fonts->AddFontFromFileTTF(path.c_str(), 100.0f * scale);
     io.Fonts->Build();
 }
 

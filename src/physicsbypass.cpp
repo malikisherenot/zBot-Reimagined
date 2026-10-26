@@ -1,4 +1,5 @@
 #include "zBot.hpp"
+#include <cmath>
 #include <Geode/modify/CCScheduler.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>

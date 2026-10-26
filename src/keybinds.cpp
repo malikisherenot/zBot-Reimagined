@@ -5,6 +5,8 @@
 #include <Geode/modify/LoadingLayer.hpp>
 using namespace geode::prelude;
 
+#ifdef GEODE_IS_DESKTOP
+
 $on_game(Loaded){
     zBot* mgr = zBot::get();
 
@@ -33,3 +35,4 @@ $on_game(Loaded){
         }
     });
 }
+#endif

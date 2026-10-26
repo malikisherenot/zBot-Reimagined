@@ -18,6 +18,10 @@ jobs:
         - name: MacOS
           os: macos-latest
 
+        - name: Android64
+          os: ubuntu-latest
+          target: Android64
+
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
@@ -31,6 +35,7 @@ jobs:
         uses: geode-sdk/build-geode-mod@main
         with:
           combine: true
+          target: ${{ matrix.config.target }}
           cli: "latest"
           sdk: "nightly"
       
